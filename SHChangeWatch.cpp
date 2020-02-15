@@ -17,6 +17,13 @@ static LPITEMIDLIST s_pidl = NULL;
 static UINT s_uRegID = 0;
 static SHChangeNotifyEntry s_entry;
 
+LPSTR AnsiFromWide(LPCWSTR pszWide)
+{
+    static CHAR s_szBuff[MAX_PATH];
+    WideCharToMultiByte(CP_ACP, 0, pszWide, -1, s_szBuff, ARRAYSIZE(s_szBuff), NULL, NULL);
+    return s_szBuff;
+}
+
 static BOOL
 DoInit(HWND hwnd, INT argc, LPWSTR *wargv)
 {
@@ -37,22 +44,22 @@ DoInit(HWND hwnd, INT argc, LPWSTR *wargv)
     PathAddBackslashW(s_szDir1);
     lstrcatW(s_szDir1, L"WatchDir1");
     CreateDirectoryW(s_szDir1, NULL);
-    printf("s_szDir1: %S\n", s_szDir1);
+    printf("s_szDir1: %s\n", AnsiFromWide(s_szDir1));
 
     lstrcpyW(s_szDir2, s_szDir1);
     PathAddBackslashW(s_szDir2);
     lstrcatW(s_szDir2, L"Dir2");
-    printf("s_szDir2: %S\n", s_szDir2);
+    printf("s_szDir2: %s\n", AnsiFromWide(s_szDir2));
 
     lstrcpyW(s_szFile1, s_szDir1);
     PathAddBackslashW(s_szFile1);
     lstrcatW(s_szFile1, L"File1.txt");
-    printf("s_szFile1: %S\n", s_szFile1);
+    printf("s_szFile1: %s\n", AnsiFromWide(s_szFile1));
 
     lstrcpyW(s_szFile2, s_szDir2);
     PathAddBackslashW(s_szFile2);
     lstrcatW(s_szFile2, L"File2.txt");
-    printf("s_szFile2: %S\n", s_szFile2);
+    printf("s_szFile2: %s\n", AnsiFromWide(s_szFile2));
 
     s_pidl = ILCreateFromPathW(s_szDir1);
 
@@ -239,8 +246,9 @@ HandlerRoutine(DWORD CtrlType)
 int main(int argc, char **argv)
 {
     printf("Press Ctrl+C to quit\n");
-    s_wargv = CommandLineToArgvW(GetCommandLineW(), &s_argc);
     SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+
+    s_wargv = CommandLineToArgvW(GetCommandLineW(), &s_argc);
     HWND hwnd = CreateDialogW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(1), NULL, DialogProc);
 
     ShowWindow(hwnd, SW_HIDE);
